@@ -1,5 +1,6 @@
 # Datos pesados (se descargan, no se suben)
-kernels/
+/data/
+kernels
 dem/
 *.tif
 *.tiff
