@@ -30,7 +30,7 @@ def compute_terrain_stats(lat: float, lon: float, radius_m: float = 100.0, site_
     res_x, res_y = abs(dem.res[0]), abs(dem.res[1])
     margin = radius_m + 2.0 * max(res_x, res_y)
 
-    col_c, row_c = dem.inv * (x0, y0)
+    col_c, row_c = dem.inv @ (x0, y0)
     col_c, row_c = float(col_c), float(row_c)
 
     span_x = int(np.ceil(margin / res_x))

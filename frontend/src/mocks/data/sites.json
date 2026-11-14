@@ -5,8 +5,8 @@
     "region": "Artemis III candidate region",
     "lat": -85.99,
     "lon": 2.93,
-    "elevation_m": 5050.0,
-    "notes": "Punto culminante en la cresta de Malapert Massif. Alta insolación persistente (>70%), excelente visibilidad de la Tierra para enlaces DTE y pendientes locales suaves (<6°) en el rellano superior."
+    "elevation_m": 5126.6,
+    "notes": "Punto culminante en la cresta de Malapert Massif sobre el DEM LOLA a 80 m/px. Alta insolación persistente, excelente visibilidad de la Tierra para enlaces DTE y pendientes locales suaves (4.4°) en el rellano superior."
   },
   {
     "id": "haworth",
@@ -14,8 +14,8 @@
     "region": "Artemis III candidate region",
     "lat": -87.45,
     "lon": -5.10,
-    "elevation_m": 1120.0,
-    "notes": "Cresta elevada en el borde oriental del cráter Haworth. Maximiza ventanas de comunicación con la Tierra y ofrece proximidad estratégica a zonas de sombra permanente (PSR) con potenciales volátiles."
+    "elevation_m": -3313.0,
+    "notes": "Zona profunda del cráter Haworth (-3313 m sobre el datum). Terreno plano (4.8°) adyacente a regiones de sombra permanente (PSR) con potenciales depósitos de hielo de agua."
   },
   {
     "id": "mons_mouton_plateau",
@@ -23,7 +23,7 @@
     "region": "Artemis III candidate region",
     "lat": -85.40,
     "lon": 31.50,
-    "elevation_m": 6020.0,
-    "notes": "Altiplanicie de Mons Mouton (Leibnitz Beta) a más de 6000 m de elevación. Topografía amplia y plana con pendientes medias <4°, idónea para aterrizaje seguro y estabilidad operativa."
+    "elevation_m": 6413.0,
+    "notes": "Cúspide de la altiplanicie de Mons Mouton (Leibnitz Beta) a 6413 m de elevación. Gran promontorio topográfico que domina el entorno polar."
   }
 ]

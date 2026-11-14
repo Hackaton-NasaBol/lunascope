@@ -63,7 +63,7 @@ class Dem:
         return lat, lon
 
     def sample(self, xs: np.ndarray | list[float], ys: np.ndarray | list[float]) -> np.ndarray:
-        cols, rows = self.inv * (np.asarray(xs), np.asarray(ys))
+        cols, rows = self.inv @ (np.asarray(xs), np.asarray(ys))
         return map_coordinates(self.z, [rows - 0.5, cols - 0.5], order=1, mode="nearest")
 
 

@@ -65,6 +65,7 @@ def compute_horizon(
         elev_angles = np.degrees(np.arctan2(zs - z0 - curv, s))
         valid = elev_angles[~np.isnan(elev_angles)]
         max_angle = float(np.max(valid)) if valid.size > 0 else 0.0
+        max_angle = float(np.clip(max_angle, -5.0, 15.0))
         horizon_el.append(round(max_angle, 3))
 
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
