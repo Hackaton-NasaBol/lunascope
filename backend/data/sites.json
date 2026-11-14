@@ -1,0 +1,29 @@
+[
+  {
+    "id": "malapert",
+    "name": "Malapert Massif",
+    "region": "Artemis III candidate region",
+    "lat": -86.0,
+    "lon": 0.0,
+    "elevation_m": 0.0,
+    "notes": "MARCADOR: coordenadas provisionales. El Integrante 3 pone las reales elegidas sobre el DEM en la H0–3."
+  },
+  {
+    "id": "haworth",
+    "name": "Haworth",
+    "region": "Artemis III candidate region",
+    "lat": -87.4,
+    "lon": -5.0,
+    "elevation_m": 0.0,
+    "notes": "MARCADOR: coordenadas provisionales. El Integrante 3 pone las reales elegidas sobre el DEM en la H0–3."
+  },
+  {
+    "id": "mons_mouton_plateau",
+    "name": "Mons Mouton Plateau",
+    "region": "Artemis III candidate region",
+    "lat": -85.4,
+    "lon": 31.0,
+    "elevation_m": 0.0,
+    "notes": "MARCADOR: coordenadas provisionales. El Integrante 3 pone las reales elegidas sobre el DEM en la H0–3."
+  }
+]

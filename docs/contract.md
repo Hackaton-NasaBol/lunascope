@@ -292,3 +292,13 @@ Todo tiene equivalente en teclado: flechas/WASD, `Q`/`E` = L1/R1, `Z`/`C` = L2/R
 - **Ante la duda sobre el contrato, decide el Integrante 1.** Ante la duda científica, el Integrante 2 (Sol/Tierra) o el 3 (terreno).
 - **Dormir:** cada uno duerme al menos 4 horas, en turnos. El equipo nunca queda vacío entre la H12 y la H40.
 - **Honestidad científica:** todo lo aproximado se etiqueta como aproximado, en pantalla y en el pitch.
+
+### Registro de cambios del contrato
+
+| Fecha / hora | Cambio | Aprobado por |
+|---|---|---|
+| 2026-11-14 (antes de la H3) | Campo opcional `source: "real" \| "mock"` en `horizon.json`, `terrain.json` y `timeseries.json` (por defecto `"real"`). Los módulos reales no tienen que ponerlo. | Integrante 1 |
+| 2026-11-14 (antes de la H3) | Cada elemento de `GET /sites` añade `quality` (`"full"`), `complete` (bool: tiene los 3 JSON) y `source`. `terrain`/`summary` pueden ser `null` si falta el archivo. | Integrante 1 |
+| 2026-11-14 (antes de la H3) | `GET /score` añade `notes: [...]` (p. ej. "El punto libre puntúa más alto, pero su análisis es aproximado."). Perfil desconocido → 404 `profile_not_found`. | Integrante 1 |
+| 2026-11-14 (antes de la H3) | `POST /point` añade `elapsed_s`. Los `point_id` (`p-1`, `p-2`…) también sirven en `/sites/{id}/horizon\|terrain\|timeseries` y en `/report`. Body inválido → 422 `invalid_request`; fuera del DEM → 422 `outside_dem`. | Integrante 1 |
+| 2026-11-14 (antes de la H3) | `POST /report` añade `quality` (`"full"` o `"estimated"`). | Integrante 1 |
