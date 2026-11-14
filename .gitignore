@@ -1,0 +1,17 @@
+# Datos pesados (se descargan, no se suben)
+kernels/
+dem/
+*.tif
+*.tiff
+*.bsp
+*.bpc
+# Python
+__pycache__/
+.venv/
+*.pyc
+# Node
+node_modules/
+dist/
+# Secretos
+.env
+.env.*
