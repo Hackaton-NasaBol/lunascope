@@ -3,12 +3,16 @@
 from lunascope.scoring.explain import ESTIMATED_TOP_NOTE, explain
 from lunascope.scoring.profiles import PROFILES
 
+# Noche más larga (h) a partir de la cual la continuidad puntúa 0. Con 240 h (contrato v1) los
+# 3 sitios reales daban 0 (sus noches duran 328–1441 h); 720 h ≈ 1 mes los distingue.
+CONTINUITY_MAX_DARK_H = 720
+
 
 def subscores(summary: dict, terrain: dict) -> dict:
     return {
         "sun": round(float(summary["sun_visible_pct"]), 1),
         "earth": round(float(summary["earth_visible_pct"]), 1),
-        "continuity": round(100 * max(0.0, 1 - summary["longest_dark_h"] / 240), 1),
+        "continuity": round(100 * max(0.0, 1 - summary["longest_dark_h"] / CONTINUITY_MAX_DARK_H), 1),
         "terrain": round(
             100 * max(0.0, 1 - terrain["slope_deg_mean"] / 15) * (1 - terrain["hazard_pct"] / 100), 1
         ),

@@ -28,10 +28,10 @@ def test_perfect_site_scores_100(pid):
 
 def test_subscores_formulas():
     sub = subscores(cand("x", 71.3, 58.0, 48, 4.2, 3.5)["summary"], {"slope_deg_mean": 4.2, "hazard_pct": 3.5})
-    assert sub["continuity"] == 80.0
+    assert sub["continuity"] == pytest.approx(100 * (1 - 48 / 720), abs=0.05)  # 93,3
     assert sub["terrain"] == pytest.approx(100 * (1 - 4.2 / 15) * (1 - 0.035), abs=0.05)
     # Fuera de rango se recorta a 0
-    assert subscores(cand("x", 0, 0, 500, 30, 0)["summary"], {"slope_deg_mean": 30, "hazard_pct": 0})["continuity"] == 0
+    assert subscores(cand("x", 0, 0, 1000, 30, 0)["summary"], {"slope_deg_mean": 30, "hazard_pct": 0})["continuity"] == 0
     assert subscores(cand("x", 0, 0, 0, 30, 0)["summary"], {"slope_deg_mean": 30, "hazard_pct": 0})["terrain"] == 0
 
 
@@ -58,7 +58,8 @@ def test_explanations_2_to_4_sentences_with_numbers():
         assert 2 <= len(row["explanation"]) <= 4
     a = next(r for r in out["ranking"] if r["site_id"] == "a")
     text = " ".join(a["explanation"])
-    assert "71 %" in text and "el mejor de los 3 sitios" in text
+    # "a" es el mejor de los 3 en Sol (71 %) y en noche más corta (96 h): su punto fuerte es uno de ellos.
+    assert ("71 %" in text or "96 h" in text) and "el mejor de los 3 sitios" in text
     assert "3 sep 05:00 UTC, 156 h" in text
 
 
@@ -78,3 +79,11 @@ def test_strong_point_is_relative_not_absolute():
     rows = rank([cand("a", 46, 68, 300, 3, 5), cand("b", 45, 73, 300, 6, 8), cand("h", 39, 57, 300, 6.5, 9)], "comms")
     h = next(r for r in rows["ranking"] if r["site_id"] == "h")
     assert not any(s.startswith("Su punto fuerte") and "el peor" in s for s in h["explanation"])
+
+
+def test_continuity_distinguishes_real_night_lengths():
+    """Con noches reales de 328 h y 336 h, la continuidad no puede ser 0 para ambas."""
+    a = subscores(cand("a", 50, 50, 328, 5, 5)["summary"], {"slope_deg_mean": 5, "hazard_pct": 5})
+    b = subscores(cand("b", 50, 50, 336, 5, 5)["summary"], {"slope_deg_mean": 5, "hazard_pct": 5})
+    assert a["continuity"] > b["continuity"] > 0
+    assert subscores(cand("c", 0, 0, 1441, 0, 0)["summary"], {"slope_deg_mean": 0, "hazard_pct": 0})["continuity"] == 0

@@ -231,7 +231,7 @@ Subpuntuaciones de 0 a 100:
 |---|---|
 | `sun` | `sun_visible_pct` |
 | `earth` | `earth_visible_pct` |
-| `continuity` | `100 × max(0, 1 − longest_dark_h / 240)` (240 h = 10 días sin Sol → 0) |
+| `continuity` | `100 × max(0, 1 − longest_dark_h / 720)` (720 h ≈ 30 días sin Sol → 0; cambiado desde 240 h, ver registro de cambios) |
 | `terrain` | `100 × max(0, 1 − slope_deg_mean / 15) × (1 − hazard_pct / 100)` |
 
 `score = Σ peso × subpuntuación` (los pesos de cada perfil suman 1).
@@ -302,3 +302,4 @@ Todo tiene equivalente en teclado: flechas/WASD, `Q`/`E` = L1/R1, `Z`/`C` = L2/R
 | 2026-11-14 (antes de la H3) | `GET /score` añade `notes: [...]` (p. ej. "El punto libre puntúa más alto, pero su análisis es aproximado."). Perfil desconocido → 404 `profile_not_found`. | Integrante 1 |
 | 2026-11-14 (antes de la H3) | `POST /point` añade `elapsed_s`. Los `point_id` (`p-1`, `p-2`…) también sirven en `/sites/{id}/horizon\|terrain\|timeseries` y en `/report`. Body inválido → 422 `invalid_request`; fuera del DEM → 422 `outside_dem`. | Integrante 1 |
 | 2026-11-14 (antes de la H3) | `POST /report` añade `quality` (`"full"` o `"estimated"`). | Integrante 1 |
+| 2026-11-14 (tras integrar SPICE + LOLA reales) | `continuity`: el límite de la noche más larga pasa de **240 h a 720 h** (`100 × max(0, 1 − longest_dark_h / 720)`). Con 240 h los 3 sitios reales puntuaban 0 (noches de 328–1441 h) y la columna no distinguía nada. Constante `CONTINUITY_MAX_DARK_H` en `backend/lunascope/scoring/engine.py` (y su copia en `frontend/src/mocks/index.ts`). | Integrante 1 |
