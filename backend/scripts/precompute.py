@@ -3,9 +3,10 @@
 Uso (desde backend/):
     python scripts/precompute.py --start 2027-09-01T00:00:00Z --days 60
     python scripts/precompute.py --site malapert          # solo un sitio
-    python scripts/precompute.py --mock                   # fuerza mocks
+    python scripts/precompute.py --mock                   # fuerza mocks (y sí pisa datos reales)
 
-Si terrain/ o science/ no están listos, usa mocks y lo avisa en consola.
+Si terrain/ o science/ no pueden calcular aquí (sin DEM o sin kernels), conserva los JSON
+reales que ya existan y solo calcula el resto: nunca sustituye datos reales por mocks.
 """
 
 from __future__ import annotations
@@ -30,6 +31,23 @@ def write_json(path: Path, data: dict) -> None:
     with path.open("w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
         f.write("\n")
+
+
+def keep_real(path: Path, new: dict, same_window: tuple[str, str] | None = None) -> dict:
+    """Si `new` es mock y en disco ya hay un JSON real (de la misma ventana), devuelve el de disco."""
+    if new.get("source") != "mock" or not path.exists():
+        return new
+    try:
+        old = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return new
+    if old.get("source", "real") == "mock":
+        return new
+    if same_window and (old.get("start"), old.get("end")) != same_window:
+        print(f"  aviso: {path.parent.name}/{path.name} real es de otra ventana: se sustituye por mock")
+        return new
+    print(f"  conservo {path.parent.name}/{path.name} (real); aquí falta su módulo/datos")
+    return old
 
 
 def main() -> int:
@@ -59,16 +77,23 @@ def main() -> int:
     for site in sites:
         t0 = time.time()
         sid, lat, lon = site["id"], site["lat"], site["lon"]
+        out = config.PRECOMPUTED_DIR / sid
         hz = pipeline.horizon(lat, lon, "full", config.OBSERVER_HEIGHT_M, site_id=sid)
         terrain = pipeline.terrain_stats(lat, lon, config.TERRAIN_RADIUS_M, site_id=sid)
+        if not args.mock:
+            # Cada integrante tiene solo sus datos pesados (DEM o kernels): nunca pisar un JSON
+            # real con un mock. Se conserva el real y lo demás se calcula a partir de él.
+            hz = keep_real(out / "horizon.json", hz)
+            terrain = keep_real(out / "terrain.json", terrain)
         ts = pipeline.timeseries(lat, lon, terrain["elevation_m"] + config.OBSERVER_HEIGHT_M, hz,
                                  start, end, config.STEP_HOURS, site_id=sid)
+        if not args.mock:
+            ts = keep_real(out / "timeseries.json", ts, same_window=(config.fmt_utc(start), config.fmt_utc(end)))
         # Validación contra el contrato antes de escribir nada.
         Horizon.model_validate(hz)
         Terrain.model_validate(terrain)
         Timeseries.model_validate(ts)
 
-        out = config.PRECOMPUTED_DIR / sid
         write_json(out / "horizon.json", hz)
         write_json(out / "terrain.json", terrain)
         write_json(out / "timeseries.json", ts)

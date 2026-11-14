@@ -13,6 +13,19 @@ from lunascope.terrain import (
 )
 
 
+def _has_dem() -> bool:
+    try:
+        get_coarse_dem()
+        return True
+    except (FileNotFoundError, RuntimeError):
+        return False
+
+
+# Como en test_science.py con los kernels: sin el DEM (fuera de git) estas pruebas se saltan.
+needs_dem = pytest.mark.skipif(not _has_dem(), reason="falta el DEM LOLA en dem/")
+
+
+@needs_dem
 def test_dem_metadata():
     dem = get_coarse_dem()
     assert dem.z.ndim == 2
@@ -21,6 +34,7 @@ def test_dem_metadata():
     assert not dem.is_inside(0.0, 0.0)
 
 
+@needs_dem
 def test_local_axes():
     dem = get_coarse_dem()
     (x0, y0), north, east = local_axes(dem, -86.0, 0.0)
@@ -30,6 +44,7 @@ def test_local_axes():
     assert np.isclose(np.dot(north, east), 0.0, atol=1e-2)
 
 
+@needs_dem
 def test_sample_elevation_valid_and_invalid():
     elev = sample_elevation(-85.99, 2.93)
     assert isinstance(elev, float)

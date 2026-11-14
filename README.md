@@ -74,6 +74,16 @@ npm run dev                    # http://localhost:5173
 
 Funciona sin backend (datos de demostración) y sin token (globo liso). Controles y detalles en [frontend/README.md](frontend/README.md).
 
-### Kernels SPICE y DEM LOLA
+### Kernels SPICE (Integrante 2)
 
-Pendiente de los Integrantes 2 y 3 (`kernels/` y `dem/` en la raíz del repo, fuera de git).
+```bash
+python backend/scripts/download_kernels.py   # ~45 MB de NAIF a <repo>/data/ (fuera de git)
+```
+
+Si se corta por tiempo en `de440s.bsp` (32 MB), descárgalo a mano en `data/` desde
+https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp y vuelve a ejecutar el script.
+Sin kernels el backend sigue funcionando: sirve los JSON precalculados y usa mocks para los puntos libres.
+
+### DEM LOLA (Integrante 3)
+
+Pendiente (`dem/` en la raíz del repo, fuera de git).
