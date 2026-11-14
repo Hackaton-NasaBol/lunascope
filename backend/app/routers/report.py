@@ -6,10 +6,19 @@ from app.config import fmt_utc
 from app.errors import not_found
 from app.models import Report, ReportIn
 from app.routers.score import compute_ranking
-from app.store import store
+from app.store import KINDS, store
+from lunascope import pipeline
 from lunascope.scoring import PROFILES
 
 router = APIRouter(tags=["report"])
+
+
+def loaded_kernel_names() -> list[str]:
+    try:
+        from lunascope.science import loaded_kernel_names as names  # type: ignore
+        return names()
+    except Exception:
+        return []
 
 LIMITATIONS = [
     "Visibilidad geométrica: no incluye enlaces de radio ni cobertura de satélites.",
@@ -29,6 +38,26 @@ def _lookup(site_id: str):
     raise not_found("site", site_id)
 
 
+def _data_sources(site_id: str) -> list[str]:
+    """Fuentes por componente: Sol/Tierra (science/) y terreno (terrain/) pueden ser reales o mock por separado."""
+    d = store.points[site_id] if site_id in store.points else {k: store.get(site_id, k) for k in KINDS}
+    is_mock = lambda k: (d.get(k) or {}).get("source") == "mock"  # noqa: E731
+    out = []
+    if is_mock("timeseries"):
+        out.append("Sol y Tierra: DATOS DE PRUEBA (mock), geometría aproximada sin SPICE.")
+    else:
+        kernels = loaded_kernel_names() if pipeline.SCIENCE else []
+        out.append("Sol y Tierra: NASA NAIF SPICE, marco MOON_ME"
+                   + (f" ({', '.join(kernels)})" if kernels else " (efemérides DE440)") + ".")
+    if is_mock("horizon") or is_mock("terrain"):
+        out.append("Terreno (horizonte, elevación, pendientes): DATOS DE PRUEBA (mock), sin DEM LOLA.")
+    else:
+        h = d.get("horizon") or {}
+        out.append(f"Terreno: LRO LOLA DEM ({h.get('dem_source', 'producto polar')}, "
+                   f"{h.get('dem_resolution_m', '?')} m/píxel en el horizonte).")
+    return out
+
+
 @router.post("/report", response_model=Report)
 def report(body: ReportIn):
     site, ts, source, point_id = _lookup(body.site_id)
@@ -40,20 +69,15 @@ def report(body: ReportIn):
     row = rows[idx]
     windows = (ts or {}).get("summary", {}).get("windows") or []
 
-    if source == "mock":
-        data_sources = ["DATOS DE PRUEBA (mock): geometría aproximada, sin SPICE ni DEM reales."]
-    else:
-        data_sources = [
-            "NASA NAIF SPICE (efemérides DE440, marco lunar MOON_ME)",
-            "LRO LOLA DEM polar (máscara de horizonte, elevación y pendientes)",
-            # TODO(Int. 1, H12): poner aquí los nombres exactos de kernels y productos DEM usados.
-        ]
+    data_sources = _data_sources(body.site_id)
 
     return {
         "title": f"Informe de planificación — {site['name']}",
         "generated_at": fmt_utc(datetime.now(timezone.utc)),
         "profile": PROFILES[body.profile],
-        "site": {k: site[k] for k in ("id", "name", "lat", "lon", "elevation_m")},
+        # La elevación buena es la del terreno (DEM); la de sites.json puede ser un marcador.
+        "site": {**{k: site[k] for k in ("id", "name", "lat", "lon")},
+                 "elevation_m": (store.get(body.site_id, "terrain") or {}).get("elevation_m", site["elevation_m"])},
         "quality": row["quality"],
         "score": row["score"],
         "rank": idx + 1,

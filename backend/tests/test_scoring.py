@@ -71,3 +71,10 @@ def test_ties_are_not_called_best():
 def test_unknown_profile():
     with pytest.raises(KeyError):
         rank([cand("a", 1, 1, 1, 1, 1)], "nope")
+
+
+def test_strong_point_is_relative_not_absolute():
+    """Un 57 % de Tierra que es el peor de los 3 no puede ser el 'punto fuerte'."""
+    rows = rank([cand("a", 46, 68, 300, 3, 5), cand("b", 45, 73, 300, 6, 8), cand("h", 39, 57, 300, 6.5, 9)], "comms")
+    h = next(r for r in rows["ranking"] if r["site_id"] == "h")
+    assert not any(s.startswith("Su punto fuerte") and "el peor" in s for s in h["explanation"])

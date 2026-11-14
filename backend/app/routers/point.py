@@ -27,6 +27,8 @@ def point(body: PointIn):
     except ValueError as e:
         if str(e) == "outside_dem":
             raise ApiError(422, "outside_dem", "El punto está fuera de la cobertura del DEM LOLA.")
+        if str(e) == "too_close_to_pole":  # science/: la base ENU no está definida en el polo exacto
+            raise ApiError(422, "too_close_to_pole", "El punto está demasiado cerca del polo (< 0,01°).")
         raise
     site = {
         "id": "",

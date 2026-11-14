@@ -57,12 +57,21 @@ def explain(row: dict, rows: list[dict], profile_id: str, recommended: str | Non
     b = row["breakdown"]
     out = []
 
-    best = max(b, key=b.get)
+    # Punto fuerte/débil = donde mejor/peor queda frente a los demás (no el valor absoluto
+    # más alto: un 57 % puede ser su mayor número y aun así el peor de los 3).
+    # Un empate cuenta como posición media; a igual posición decide el valor.
+    n_rows = len(rows)
+
+    def rank_of(k: str) -> float:
+        p = _position(k, row, rows)[0]
+        return (n_rows + 1) / 2 if p == 0 else p
+
+    best = min(b, key=lambda k: (rank_of(k), -b[k]))
     pos, n = _position(best, row, rows)
     out.append(f"Su punto fuerte: {_fact(best, row)}{_pos_text(pos, n, group)}.")
 
-    worst = min(b, key=b.get)
-    if worst != best:
+    worst = max((k for k in b if k != best), key=lambda k: (rank_of(k), -b[k]))
+    if rank_of(worst) > rank_of(best) or b[worst] < b[best]:
         pos, n = _position(worst, row, rows)
         out.append(f"Punto débil: {_fact(worst, row)}{_pos_text(pos, n, group)}.")
 

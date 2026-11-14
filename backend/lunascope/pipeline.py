@@ -69,7 +69,11 @@ def horizon(lat: float, lon: float, mode: str, observer_height_m: float, site_id
 
 def timeseries(lat: float, lon: float, height_m: float, hz: dict, start: datetime,
                end: datetime, step_h: float, site_id: str = "") -> dict:
-    if SCIENCE:
+    # science/ puede importarse sin kernels (p. ej. un clon recién hecho): entonces, mock.
+    if SCIENCE and not kernels_loaded():
+        log.warning("science/ disponible pero sin kernels SPICE: se usa el mock "
+                    "(ejecuta backend/scripts/download_kernels.py)")
+    if SCIENCE and kernels_loaded():
         out = dict(SCIENCE(lat, lon, height_m, hz["horizon_el_deg"], start, end,
                            step_h=step_h, site_id=site_id))
         out.setdefault("source", "real")

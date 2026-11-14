@@ -102,3 +102,9 @@ def test_report(client):
     rep = r.json()
     assert rep["site"]["id"] == "malapert" and 1 <= rep["rank"] <= 3
     assert rep["limitations"] and rep["data_sources"] and len(rep["comparison"]) == 3
+
+
+def test_report_uses_terrain_elevation(client):
+    terrain = client.get("/api/sites/malapert/terrain").json()
+    rep = client.post("/api/report", json={"site_id": "malapert", "profile": "solar"}).json()
+    assert rep["site"]["elevation_m"] == terrain["elevation_m"]
