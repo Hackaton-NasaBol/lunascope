@@ -63,6 +63,17 @@ pytest                          # puntuación + API
 python scripts/demo_check.py    # con el servidor arrancado: llama a todos los endpoints
 ```
 
-### Kernels SPICE, DEM LOLA y frontend
+### Frontend (Node 20+)
 
-Pendiente de los Integrantes 2, 3 y 4 (`kernels/` y `dem/` en la raíz del repo, fuera de git).
+```bash
+cd frontend
+npm install
+cp .env.example .env.local     # VITE_CESIUM_TOKEN=... (token de Cesium ion, no se sube)
+npm run dev                    # http://localhost:5173
+```
+
+Funciona sin backend (datos de demostración) y sin token (globo liso). Controles y detalles en [frontend/README.md](frontend/README.md).
+
+### Kernels SPICE y DEM LOLA
+
+Pendiente de los Integrantes 2 y 3 (`kernels/` y `dem/` en la raíz del repo, fuera de git).
