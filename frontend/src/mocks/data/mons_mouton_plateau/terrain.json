@@ -1,1 +1,1 @@
-{"site_id":"mons_mouton_plateau","elevation_m":4560.7,"radius_m":100,"slope_deg_mean":4.08,"slope_deg_max":11.64,"hazard_pct":3.25,"dem_resolution_m":20,"source":"mock"}
+{"site_id":"mons_mouton_plateau","elevation_m":6413.0,"radius_m":100.0,"slope_deg_mean":10.11,"slope_deg_max":11.46,"hazard_pct":50.0,"dem_resolution_m":80.0,"source":"real"}

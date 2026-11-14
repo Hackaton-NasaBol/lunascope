@@ -1,1 +1,1 @@
-{"site_id":"malapert","elevation_m":5220.8,"radius_m":100,"slope_deg_mean":7.94,"slope_deg_max":18.17,"hazard_pct":2.48,"dem_resolution_m":20,"source":"mock"}
+{"site_id":"malapert","elevation_m":5126.6,"radius_m":100.0,"slope_deg_mean":4.43,"slope_deg_max":5.43,"hazard_pct":0.0,"dem_resolution_m":80.0,"source":"real"}
