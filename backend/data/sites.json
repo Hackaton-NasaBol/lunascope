@@ -3,27 +3,27 @@
     "id": "malapert",
     "name": "Malapert Massif",
     "region": "Artemis III candidate region",
-    "lat": -86.0,
-    "lon": 0.0,
-    "elevation_m": 0.0,
-    "notes": "MARCADOR: coordenadas provisionales. El Integrante 3 pone las reales elegidas sobre el DEM en la H0–3."
+    "lat": -85.99,
+    "lon": 2.93,
+    "elevation_m": 5050.0,
+    "notes": "Punto culminante en la cresta de Malapert Massif. Alta insolación persistente (>70%), excelente visibilidad de la Tierra para enlaces DTE y pendientes locales suaves (<6°) en el rellano superior."
   },
   {
     "id": "haworth",
     "name": "Haworth",
     "region": "Artemis III candidate region",
-    "lat": -87.4,
-    "lon": -5.0,
-    "elevation_m": 0.0,
-    "notes": "MARCADOR: coordenadas provisionales. El Integrante 3 pone las reales elegidas sobre el DEM en la H0–3."
+    "lat": -87.45,
+    "lon": -5.10,
+    "elevation_m": 1120.0,
+    "notes": "Cresta elevada en el borde oriental del cráter Haworth. Maximiza ventanas de comunicación con la Tierra y ofrece proximidad estratégica a zonas de sombra permanente (PSR) con potenciales volátiles."
   },
   {
     "id": "mons_mouton_plateau",
     "name": "Mons Mouton Plateau",
     "region": "Artemis III candidate region",
-    "lat": -85.4,
-    "lon": 31.0,
-    "elevation_m": 0.0,
-    "notes": "MARCADOR: coordenadas provisionales. El Integrante 3 pone las reales elegidas sobre el DEM en la H0–3."
+    "lat": -85.40,
+    "lon": 31.50,
+    "elevation_m": 6020.0,
+    "notes": "Altiplanicie de Mons Mouton (Leibnitz Beta) a más de 6000 m de elevación. Topografía amplia y plana con pendientes medias <4°, idónea para aterrizaje seguro y estabilidad operativa."
   }
 ]
