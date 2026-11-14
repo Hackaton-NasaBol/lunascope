@@ -11,6 +11,7 @@ const MOON = Cesium.Ellipsoid.MOON;
 const MOON_TERRAIN_ASSET = 2684829;
 const TOKEN = import.meta.env.VITE_CESIUM_TOKEN as string | undefined;
 const MIN_H = 1_500, MAX_H = 3_000_000;
+const MOON_TEXTURE = "/textures/moon_lroc_4k.jpg"; // ver public/textures/CREDITS.md
 
 Cesium.Ellipsoid.default = MOON; // ¡antes de crear el viewer!
 if (TOKEN) Cesium.Ion.defaultAccessToken = TOKEN;
@@ -46,9 +47,16 @@ export default function Globe() {
     (viewer.cesiumWidget.creditContainer as HTMLElement).style.display = "none";
     initialView(scene.camera);
 
+    // ---------- textura de respaldo: mosaico de color LRO (NASA SVS, local, funciona sin internet)
+    Cesium.SingleTileImageryProvider.fromUrl(MOON_TEXTURE, { rectangle: Cesium.Rectangle.MAX_VALUE })
+      .then((provider) => {
+        if (!destroyed) viewer.imageryLayers.addImageryProvider(provider);
+      })
+      .catch((e) => console.warn("No se pudo cargar la textura lunar de respaldo:", e));
+
     // ---------- terreno Cesium Moon (requiere token e internet)
     if (!TOKEN) {
-      set({ globeStatus: "ellipsoid", globeMessage: "Sin token de Cesium ion: globo liso sin relieve (añade VITE_CESIUM_TOKEN en .env.local)." });
+      set({ globeStatus: "ellipsoid", globeMessage: "Sin token de Cesium ion: textura LRO sin relieve (añade VITE_CESIUM_TOKEN en .env.local)." });
     } else {
       Cesium.Cesium3DTileset.fromIonAssetId(MOON_TERRAIN_ASSET)
         .then((ts) => {
@@ -61,7 +69,7 @@ export default function Globe() {
         })
         .catch((e) => {
           console.error(e);
-          set({ globeStatus: "ellipsoid", globeMessage: "Sin conexión con Cesium: usa el video de respaldo (se muestra un globo liso)." });
+          set({ globeStatus: "ellipsoid", globeMessage: "Sin conexión con Cesium: se muestra la textura LRO sin relieve (o usa el video de respaldo)." });
         });
     }
 
@@ -79,7 +87,8 @@ export default function Globe() {
       flyToSite(lat, lon, duration = 1.2) {
         const center = Cesium.Cartesian3.fromDegrees(lon, lat, 0, MOON);
         scene.camera.flyToBoundingSphere(new Cesium.BoundingSphere(center, 500), {
-          offset: new Cesium.HeadingPitchRange(scene.camera.heading, Cesium.Math.toRadians(-40), 45_000),
+          // Sin relieve la textura global se estira junto al polo: con el respaldo no nos acercamos tanto.
+          offset: new Cesium.HeadingPitchRange(scene.camera.heading, Cesium.Math.toRadians(-40), tileset ? 45_000 : 160_000),
           duration,
         });
       },
