@@ -29,4 +29,40 @@ docs/       Contrato y documentos por integrante
 
 ## Arranque
 
-Las instrucciones de instalación se completarán durante el hackathon (Integrante 1).
+### Backend (Python 3.11+)
+
+```bash
+cd backend
+python -m venv .venv
+# Windows: .venv\Scripts\activate   ·   Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+- API: `http://localhost:8000/api` · Documentación viva: `http://localhost:8000/docs`
+- Los JSON precalculados de los 3 sitios están en git, así que la API funciona **sin kernels ni DEM** (y sin internet).
+- Mientras `science/` y `terrain/` no estén listos, los datos son **mocks** con la forma exacta del contrato y llevan `"source": "mock"`.
+
+### Regenerar los datos de los 3 sitios
+
+```bash
+cd backend
+python scripts/precompute.py --start 2027-09-01T00:00:00Z --days 60
+python scripts/precompute.py --site malapert   # solo un sitio
+python scripts/precompute.py --mock            # fuerza mocks
+```
+
+Usa `lunascope.terrain` y `lunascope.science` si existen; si no, cae a mocks y lo avisa. Valida la salida con los modelos Pydantic antes de escribir.
+La ventana de la misión se puede cambiar con `LUNASCOPE_MISSION_START` y `LUNASCOPE_MISSION_DAYS`.
+
+### Pruebas
+
+```bash
+cd backend
+pytest                          # puntuación + API
+python scripts/demo_check.py    # con el servidor arrancado: llama a todos los endpoints
+```
+
+### Kernels SPICE, DEM LOLA y frontend
+
+Pendiente de los Integrantes 2, 3 y 4 (`kernels/` y `dem/` en la raíz del repo, fuera de git).
