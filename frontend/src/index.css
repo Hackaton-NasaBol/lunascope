@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, "Segoe UI", Roboto, sans-serif;
+  background: #020617;
+  color: #e2e8f0;
+}
+
+html, body, #root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+@layer components {
+  .glass {
+    @apply rounded-2xl border border-slate-600/40 bg-slate-900/70 shadow-2xl backdrop-blur-md;
+  }
+  .badge-amber {
+    @apply rounded bg-amber-400/90 px-2 py-0.5 text-sm font-semibold text-slate-950;
+  }
+}
+
+.panel-in {
+  animation: panel-in 180ms cubic-bezier(.2, .8, .2, 1);
+}
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Retícula del modo Explore */
+.reticle {
+  position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.reticle::before, .reticle::after {
+  content: ""; position: absolute; background: #38bdf8; box-shadow: 0 0 6px #000;
+}
+.reticle::before { left: 50%; top: 0; bottom: 0; width: 2px; transform: translateX(-50%); }
+.reticle::after { top: 50%; left: 0; right: 0; height: 2px; transform: translateY(-50%); }
+
+.cesium-viewer-bottom, .cesium-widget-credits { display: none !important; }
+
+/* Informe imprimible */
+@media print {
+  @page { margin: 14mm; }
+  html, body, #root { height: auto; overflow: visible; background: #fff; }
+  body * { visibility: hidden; }
+  .report, .report * { visibility: visible; color: #0f172a !important; }
+  .report-backdrop { position: static; background: none; backdrop-filter: none; padding: 0; }
+  .report {
+    position: absolute; left: 0; top: 0; width: 100%; max-height: none; overflow: visible;
+    background: #fff !important; border: none; box-shadow: none; backdrop-filter: none;
+  }
+  .report .bg-slate-800\/70 { background: #f1f5f9 !important; }
+}
