@@ -245,7 +245,7 @@ Subpuntuaciones de 0 a 100:
 |---|---|
 | `sun` | `sun_visible_pct` |
 | `earth` | `earth_visible_pct` |
-| `continuity` | `100 × max(0, 1 − longest_dark_h / 240)` (240 h = 10 días sin Sol → 0) |
+| `continuity` | `100 × max(0, 1 − longest_dark_h / 720)` (720 h ≈ 30 días sin Sol → 0; cambiado desde 240 h, ver registro de cambios) |
 | `terrain` | `100 × max(0, 1 − slope_deg_mean / 15) × (1 − hazard_pct / 100)` |
 
 `score = Σ peso × subpuntuación` (los pesos de cada perfil suman 1).
@@ -430,7 +430,7 @@ def subscores(summary: dict, terrain: dict) -> dict:
     return {
         "sun": summary["sun_visible_pct"],
         "earth": summary["earth_visible_pct"],
-        "continuity": 100 * max(0.0, 1 - summary["longest_dark_h"] / 240),
+        "continuity": 100 * max(0.0, 1 - summary["longest_dark_h"] / 720),
         "terrain": 100 * max(0.0, 1 - terrain["slope_deg_mean"] / 15) * (1 - terrain["hazard_pct"] / 100),
     }
 

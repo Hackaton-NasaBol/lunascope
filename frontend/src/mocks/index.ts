@@ -40,12 +40,14 @@ export async function mockSites(): Promise<SiteOverview[]> {
 
 // Puerto en TS del motor de backend/lunascope/scoring (versión simplificada de las explicaciones).
 const r1 = (x: number) => Math.round(x * 10) / 10;
+/** Igual que CONTINUITY_MAX_DARK_H en backend/lunascope/scoring/engine.py. */
+const CONTINUITY_MAX_DARK_H = 720;
 
 function subscores(s: Summary, t: Terrain) {
   return {
     sun: r1(s.sun_visible_pct),
     earth: r1(s.earth_visible_pct),
-    continuity: r1(100 * Math.max(0, 1 - s.longest_dark_h / 240)),
+    continuity: r1(100 * Math.max(0, 1 - s.longest_dark_h / CONTINUITY_MAX_DARK_H)),
     terrain: r1(100 * Math.max(0, 1 - t.slope_deg_mean / 15) * (1 - t.hazard_pct / 100)),
   };
 }
