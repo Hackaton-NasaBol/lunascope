@@ -2,7 +2,8 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter
 
-from app.config import fmt_utc
+from app import scenario
+from app.config import fmt_utc, parse_utc
 from app.errors import not_found
 from app.models import Report, ReportIn
 from app.routers.score import compute_ranking
@@ -60,8 +61,9 @@ def _data_sources(site_id: str) -> list[str]:
 
 @router.post("/report", response_model=Report)
 def report(body: ReportIn):
-    site, ts, source, point_id = _lookup(body.site_id)
-    ranking = compute_ranking(body.profile, point_id)
+    site, _, source, point_id = _lookup(body.site_id)
+    ts = scenario.series(body.site_id, body.start, body.days)
+    ranking = compute_ranking(body.profile, point_id, body.start, body.days)
     rows = ranking["ranking"]
     idx = next((i for i, r in enumerate(rows) if r["site_id"] == body.site_id), None)
     if idx is None:
@@ -83,6 +85,8 @@ def report(body: ReportIn):
         "rank": idx + 1,
         "breakdown": row["breakdown"],
         "best_window": windows[0] if windows else None,
+        "mission_window": {"start": ts["start"], "end": ts["end"],
+                           "hours": (parse_utc(ts["end"]) - parse_utc(ts["start"])).total_seconds() / 3600},
         "explanation": row["explanation"] + ranking["notes"],
         "comparison": [{"site_id": r["site_id"], "score": r["score"]} for r in rows],
         "data_sources": data_sources,

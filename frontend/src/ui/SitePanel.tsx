@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { sampleAt } from "../lib/time";
+import { nextChangeText, sampleAt } from "../lib/time";
 import { activeSite, activeTimeseries, useStore } from "../store";
 
 const fmt = (v: number | undefined, d = 1) => (v === undefined ? "—" : v.toLocaleString("es", { maximumFractionDigits: d, minimumFractionDigits: d }));
@@ -34,9 +34,11 @@ export default function SitePanel() {
           <Row k="Sol: azimut / elevación" v={`${fmtAz(smp.sun.az)}° / ${fmt(smp.sun.el, 2)}°`} />
           <Row k="Horizonte en el azimut del Sol" v={`${fmt(smp.sun.horizon_el, 2)}°`} />
           <Row k="Disco solar visible" v={`${fmt(smp.sun.visible_fraction * 100, 0)} %`} />
+          <Row k="Próximo cambio del Sol" v={nextChangeText(ts!, s.timeIndex, "sun").text} />
           <Row k="Tierra: azimut / elevación" v={`${fmtAz(smp.earth.az)}° / ${fmt(smp.earth.el, 2)}°`} />
           <Row k="Horizonte en el azimut de la Tierra" v={`${fmt(smp.earth.horizon_el, 2)}°`} />
           <Row k="Disco terrestre visible" v={`${fmt(smp.earth.visible_fraction * 100, 0)} %`} />
+          <Row k="Próximo cambio de la Tierra" v={nextChangeText(ts!, s.timeIndex, "earth").text} />
         </>
       ) : (
         <>

@@ -23,10 +23,10 @@ const LEGEND: Record<Mode, Entry[]> = {
 export default function ButtonLegend() {
   const mode = useStore((s) => s.mode);
   const panel = useStore((s) => s.panel);
-  const modal = panel === "report" || panel === "menu";
+  const modal = panel === "report" || panel === "menu" || panel === "mission";
   const entries: Entry[] = modal
     ? [["circle", "Cerrar", "Esc"], ["options", "Menú", "M"]]
-    : [...LEGEND[mode], ["circle", panel ? "Cerrar panel" : "Volver", "Esc"], ["options", "Menú", "M"]];
+    : [...LEGEND[mode], ["share", "Fecha", "F"], ["circle", panel ? "Cerrar panel" : "Volver", "Esc"], ["options", "Menú", "M"]];
   return (
     <div className="glass pointer-events-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-5 py-3 print:hidden">
       {entries.map(([id, label, key]) => (

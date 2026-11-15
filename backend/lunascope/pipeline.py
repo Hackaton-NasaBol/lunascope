@@ -7,11 +7,16 @@ avisa en el log. Nunca bloquea la demo.
 from __future__ import annotations
 
 import logging
+import threading
 from datetime import datetime
 
 from lunascope import mock
 
 log = logging.getLogger("lunascope.pipeline")
+
+# CSPICE NO es seguro con hilos: FastAPI atiende peticiones en paralelo y dos llamadas a SPICE a la vez
+# rompen la librería y tiran el proceso (SPICE(BADSUBSCRIPT) en framex). Toda llamada a SPICE pasa por aquí.
+SPICE_LOCK = threading.RLock()
 
 
 def _import_terrain():
@@ -74,8 +79,9 @@ def timeseries(lat: float, lon: float, height_m: float, hz: dict, start: datetim
         log.warning("science/ disponible pero sin kernels SPICE: se usa el mock "
                     "(ejecuta backend/scripts/download_kernels.py)")
     if SCIENCE and kernels_loaded():
-        out = dict(SCIENCE(lat, lon, height_m, hz["horizon_el_deg"], start, end,
-                           step_h=step_h, site_id=site_id))
+        with SPICE_LOCK:
+            out = dict(SCIENCE(lat, lon, height_m, hz["horizon_el_deg"], start, end,
+                               step_h=step_h, site_id=site_id))
         out.setdefault("source", "real")
     else:
         out = mock.mock_timeseries(lat, lon, height_m, hz["horizon_el_deg"], start, end,

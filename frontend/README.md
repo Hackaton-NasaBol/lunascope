@@ -30,6 +30,7 @@ npm run dev                    # http://localhost:5173
 | Cruceta | 1 ← · 2 → · 3 ↑ · 4 ↓ | ↑↓ capa: ninguna / elevación / pendiente | ←→ ventana ant. / sig. · ↑↓ capa | Cambiar de perfil |
 | Círculo | Esc | Cerrar panel | Cerrar panel | Cerrar panel |
 | Touchpad | Tab | Siguiente modo | Siguiente modo | Vuelve a Explore |
+| Share | F | Fecha de la misión | Fecha de la misión | Fecha de la misión |
 | Options | M | Menú | Menú | Menú |
 
 Si los índices de los botones de tu mando son distintos, cámbialos en `BUTTON_TO_ACTION` ([src/input/gamepad.ts](src/input/gamepad.ts)).
@@ -47,6 +48,15 @@ src/
 ├── modes/      ExploreMode, MissionTimeMode, SelectionMode
 └── ui/         TopBar, ButtonLegend, ControllerStatus, SitePanel, TimeChart, ComparisonTable, ScoreDetail, ReportModal, Menu
 ```
+
+## Fecha de la misión y tiempo hasta la puesta
+
+- **Share (F)** abre el panel de fecha: ←→ ±1 día, ↑↓ ±1 mes lunar (29,5 d), L1/R1 duración (15–180 d), ✕ aplica.
+  También se puede escribir la fecha o hacer clic en «Misión: …» de la barra superior. El backend recalcula las series
+  con SPICE (≈0,1 s por sitio) y la puntuación, el informe y las sombras pasan a esa ventana. Requiere los kernels en
+  el servidor; si no los tiene, solo vale la fecha por defecto (se avisa).
+- **Mission Time** muestra bajo cada indicador cuánto falta para la **puesta** (o la salida) del Sol y de la Tierra,
+  con la hora UTC; en ámbar si se pierde en menos de 24 h. También en el panel del instante (□).
 
 ## Capas y sombras (modo análisis)
 

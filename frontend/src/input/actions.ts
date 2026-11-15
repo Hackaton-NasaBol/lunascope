@@ -2,7 +2,8 @@
 import { globe } from "../globe/bridge";
 import { indexOf } from "../lib/time";
 import {
-  activeSite, activeTimeseries, analyzePoint, get, LAYER_ORDER, MODES, openReport, refreshScore, set, toast,
+  activeSite, activeTimeseries, analyzePoint, applyMission, get, LAYER_ORDER, MODES, nudgeMissionDraft, openMissionPanel,
+  openReport, refreshScore, set, SYNODIC_MS, toast,
   type Mode, type State,
 } from "../store";
 import { rumble } from "./gamepad";
@@ -80,6 +81,25 @@ function toggleShadows() {
   if (on && site && globe.cameraHeight() > 120_000) globe.flyToSite(site.lat, site.lon);
 }
 
+const DAY_MS = 86_400_000;
+const DURATIONS = [15, 30, 60, 90, 120, 180];
+
+/** Panel de fecha de la misión: ←→ ±1 día, ↑↓ ±1 mes lunar, L1/R1 duración, ✕ aplicar. */
+function missionPanel(action: Action) {
+  const d = get().missionDraft;
+  if (!d) return;
+  if (action === "dpad_left") return nudgeMissionDraft(-DAY_MS);
+  if (action === "dpad_right") return nudgeMissionDraft(DAY_MS);
+  if (action === "dpad_down") return nudgeMissionDraft(-SYNODIC_MS);
+  if (action === "dpad_up") return nudgeMissionDraft(SYNODIC_MS);
+  if (action === "l1" || action === "r1") {
+    const i = DURATIONS.indexOf(d.days);
+    const next = DURATIONS[Math.max(0, Math.min(DURATIONS.length - 1, (i < 0 ? 2 : i) + (action === "r1" ? 1 : -1)))];
+    return nudgeMissionDraft(0, next - d.days);
+  }
+  if (action === "x") return void applyMission(d);
+}
+
 function toggle(panel: State["panel"]) {
   set({ panel: get().panel === panel ? null : panel });
 }
@@ -94,6 +114,8 @@ export function handle(action: Action) {
   }
   if (action === "circle") return set({ panel: null });
   if (action === "options") return toggle("menu");
+  if (action === "share") return s.panel === "mission" ? set({ panel: null }) : openMissionPanel();
+  if (s.panel === "mission") return missionPanel(action);
   if (s.panel === "report" || s.panel === "menu") return; // con el informe o el menú abiertos solo vale Círculo/Options
   if (action === "l1") return goToSite(-1);
   if (action === "r1") return goToSite(1);
@@ -144,7 +166,7 @@ let rowCooldown = 0;
 
 export function continuous(a: Analog, dt: number) {
   const s = get();
-  const modal = s.panel === "report" || s.panel === "menu";
+  const modal = s.panel === "report" || s.panel === "menu" || s.panel === "mission";
   if (s.mode === "explore") {
     if (!modal) globe.move(a.lx, a.ly, a.rx, a.ry, a.r2 - a.l2, dt);
     return;

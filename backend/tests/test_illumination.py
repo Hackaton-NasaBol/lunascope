@@ -68,8 +68,11 @@ def test_api_meta_and_png():
         assert png.status_code == 200 and png.headers["content-type"] == "image/png"
         assert png.content[:8] == b"\x89PNG\r\n\x1a\n"
         assert -90 <= float(png.headers["x-sun-el"]) <= 90
-        out = c.get("/api/illumination/malapert.png", params={"t": "2030-01-01T00:00:00Z"})
-        assert out.status_code == 422 and out.json()["error"] == "time_out_of_range"
+        # Otra fecha (fuera de la serie por defecto): el Sol se calcula con SPICE directamente.
+        other = c.get("/api/illumination/malapert.png", params={"t": "2028-03-10T00:00:00Z"})
+        assert other.status_code in (200, 503)
+        out = c.get("/api/illumination/malapert.png", params={"t": "2200-01-01T00:00:00Z"})
+        assert out.status_code == 422 and out.json()["error"] == "date_out_of_range"
 
 
 def test_terrain_heightmap_tiles():

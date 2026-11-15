@@ -80,7 +80,7 @@ def load_kernels() -> list[str]:
     return list(_loaded)
 
 
-def kernels_loaded() -> bool:
+def kernels_loaded() -> bool:  # (la carga ya va con _lock; los cálculos usan pipeline.SPICE_LOCK)
     """True si los kernels están (o pueden estar) cargados. Lo usa /api/health."""
     try:
         load_kernels()

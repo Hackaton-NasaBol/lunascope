@@ -149,6 +149,8 @@ class PointOut(BaseModel):
 class ReportIn(BaseModel):
     site_id: str
     profile: str
+    start: Optional[str] = None   # ventana de la misión (por defecto, la precalculada)
+    days: Optional[int] = None
 
 
 class ReportSite(BaseModel):
@@ -176,6 +178,7 @@ class Report(BaseModel):
     rank: int
     breakdown: Breakdown
     best_window: Optional[Window]
+    mission_window: Window
     explanation: list[str]
     comparison: list[ComparisonRow]
     data_sources: list[str]

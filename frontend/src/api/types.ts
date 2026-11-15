@@ -138,10 +138,52 @@ export interface Report {
   rank: number;
   breakdown: Breakdown;
   best_window: Window | null;
+  mission_window?: Window;
   explanation: string[];
   comparison: { site_id: string; score: number }[];
   data_sources: string[];
   limitations: string[];
+}
+
+/** GET /api/mission: ventana por defecto, límites y si el servidor puede calcular otras fechas. */
+export interface MissionInfo {
+  default_start: string;
+  default_days: number;
+  max_days: number;
+  min_start: string;
+  max_end: string;
+  live_dates: boolean;
+}
+
+/** GET /api/scenario: resumen de una fecha de misión para todos los sitios. */
+export interface ScenarioSite {
+  site_id: string;
+  name: string;
+  quality: Quality;
+  score: number | null;
+  sun_visible_pct: number;
+  earth_visible_pct: number;
+  both_visible_pct: number;
+  longest_dark_h: number;
+  best_window: Window | null;
+  windows_count: number;
+  at_landing: { sun_visible: boolean; sun_change_h: number | null; earth_visible: boolean; earth_change_h: number | null };
+}
+
+export interface ScenarioSummary {
+  start: string;
+  end: string;
+  days: number;
+  is_default: boolean;
+  profile: ProfileId;
+  recommended: string;
+  sites: ScenarioSite[];
+}
+
+/** Ventana de la misión elegida por el usuario. */
+export interface MissionWindow {
+  start: string;
+  days: number;
 }
 
 export interface ApiErrorBody {
