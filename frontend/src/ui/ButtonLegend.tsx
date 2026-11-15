@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useStore, type Mode } from "../store";
 import { Kbd, PadButton, type ButtonId } from "./Buttons";
 
@@ -20,18 +21,39 @@ const LEGEND: Record<Mode, Entry[]> = {
   ],
 };
 
+/** Publica la altura real de la leyenda en la variable CSS --legend-h (la usa Mission Time para no taparse). */
+function useLegendHeight() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      document.documentElement.style.setProperty("--legend-h", `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return ref;
+}
+
 export default function ButtonLegend() {
+  const ref = useLegendHeight();
   const mode = useStore((s) => s.mode);
   const panel = useStore((s) => s.panel);
   const modal = panel === "report" || panel === "menu" || panel === "mission";
   const entries: Entry[] = modal
     ? [["circle", "Cerrar", "Esc"], ["options", "Menú", "M"]]
     : [...LEGEND[mode], ["share", "Fecha", "F"], ["circle", panel ? "Cerrar panel" : "Volver", "Esc"], ["options", "Menú", "M"]];
+  // En Mission Time la leyenda es compacta para dejar sitio al gráfico.
+  const compact = mode === "time";
   return (
-    <div className="glass pointer-events-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-5 py-3 print:hidden">
+    <div
+      ref={ref}
+      className={`glass pointer-events-auto flex flex-wrap items-center justify-center print:hidden ${compact ? "gap-x-3.5 gap-y-1 px-3 py-1.5" : "gap-x-5 gap-y-2 px-5 py-3"}`}
+    >
       {entries.map(([id, label, key]) => (
-        <div key={id + label} className="flex items-center gap-2 text-base text-slate-200">
-          <PadButton id={id} size={30} />
+        <div key={id + label} className={`flex items-center gap-1.5 text-slate-200 ${compact ? "text-sm" : "text-base"}`}>
+          <PadButton id={id} size={compact ? 24 : 30} />
           <span>{label}</span>
           <Kbd>{key}</Kbd>
         </div>

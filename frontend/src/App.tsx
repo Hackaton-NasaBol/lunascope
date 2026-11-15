@@ -27,8 +27,8 @@ export default function App() {
 
   return (
     <div className="relative h-full w-full select-none overflow-hidden bg-slate-950">
-      {/* Globo: pantalla completa; en Mission Time ocupa el 54 % superior */}
-      <div className="absolute inset-x-0 top-0 transition-[bottom] duration-200" style={{ bottom: mode === "time" ? "46%" : 0 }}>
+      {/* Globo: pantalla completa; en Mission Time ocupa la mitad superior */}
+      <div className="absolute inset-x-0 top-0 transition-[bottom] duration-200" style={{ bottom: mode === "time" ? "50%" : 0 }}>
         <Globe />
         {mode === "explore" && <div className="reticle" />}
       </div>
