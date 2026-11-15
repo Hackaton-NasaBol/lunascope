@@ -19,7 +19,8 @@ export default function Menu() {
           <li>L1/R1 (Q/E): sitio anterior / siguiente, en todos los modos.</li>
           <li>Mission Time: L2/R2 (Z/C) mueven el tiempo; la presión controla la velocidad.</li>
           <li>Mission Selection: la cruceta (1–4) cambia el perfil; X (Enter) confirma y genera el informe.</li>
-          <li>La visibilidad oficial es la de los gráficos (máscara LOLA). Las sombras 3D son aproximadas.</li>
+          <li>Triángulo (T): sombras del relieve calculadas con el DEM LOLA y el Sol SPICE. Cruceta ↑↓ (3/4): capa de elevación o pendiente.</li>
+          <li>La visibilidad oficial de la antena es la de los gráficos (máscara de horizonte LOLA).</li>
         </ul>
         <div className="mb-5 text-sm text-slate-400">
           Globo: {s.globeStatus === "terrain" ? "Cesium Moon Terrain" : s.globeStatus === "ellipsoid" ? "elipsoide liso (sin relieve)" : "cargando"} ·

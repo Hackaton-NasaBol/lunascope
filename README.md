@@ -86,4 +86,18 @@ Sin kernels el backend sigue funcionando: sirve los JSON precalculados y usa moc
 
 ### DEM LOLA (Integrante 3)
 
-Pendiente (`dem/` en la raíz del repo, fuera de git).
+```bash
+python backend/scripts/download_dem.py       # ~190 MB de NASA PGDA a <repo>/dem/ (fuera de git), reanuda si se corta
+```
+
+Con el DEM, el backend sirve además el relieve 3D LOLA y las sombras del terreno. Sin él, la app funciona
+igual pero sin sombras calculadas (usa las aproximadas de Cesium) y con el globo liso.
+
+### Capas de elevación, pendiente y relieve (para el globo)
+
+```bash
+cd backend
+python scripts/make_layers.py                # necesita el DEM; escribe frontend/public/layers/
+```
+
+Las imágenes generadas están en git, así que solo hay que regenerarlas si cambia el DEM.

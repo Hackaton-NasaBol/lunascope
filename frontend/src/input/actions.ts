@@ -2,7 +2,7 @@
 import { globe } from "../globe/bridge";
 import { indexOf } from "../lib/time";
 import {
-  activeSite, activeTimeseries, analyzePoint, get, MODES, openReport, refreshScore, set, toast,
+  activeSite, activeTimeseries, analyzePoint, get, LAYER_ORDER, MODES, openReport, refreshScore, set, toast,
   type Mode, type State,
 } from "../store";
 import { rumble } from "./gamepad";
@@ -56,6 +56,30 @@ function cycleProfile(delta: number) {
   });
 }
 
+function cycleLayer(delta: number) {
+  const s = get();
+  const available = LAYER_ORDER.filter((id) => id === "none" || s.layersMeta.some((m) => m.id === id));
+  if (available.length === 1) return toast("Capas no disponibles: genera backend/scripts/make_layers.py");
+  const layer = available[(available.indexOf(s.layer) + delta + available.length) % available.length];
+  set({ layer, layerFromShadows: false }); // la eligió el usuario: Triángulo ya no la quita
+}
+
+/** Triángulo: sombras del relieve. Se calculan alrededor del sitio activo: si la cámara está lejos, se acerca. */
+function toggleShadows() {
+  const s = get();
+  const on = !s.shadows;
+  if (on) {
+    // Sin capa elegida, las sombras se pintan sobre el mapa de alturas en color (más legible que el gris).
+    const auto = s.layer === "none" && s.layersMeta.some((m) => m.id === "elevation");
+    set({ shadows: true, layerFromShadows: auto, ...(auto ? { layer: "elevation" as const } : {}) });
+  } else {
+    // Al apagar, se deshace lo que hizo Triángulo: vuelve la vista normal de la Luna.
+    set({ shadows: false, layerFromShadows: false, ...(s.layerFromShadows && s.layer === "elevation" ? { layer: "none" as const } : {}) });
+  }
+  const site = activeSite(s);
+  if (on && site && globe.cameraHeight() > 120_000) globe.flyToSite(site.lat, site.lon);
+}
+
 function toggle(panel: State["panel"]) {
   set({ panel: get().panel === panel ? null : panel });
 }
@@ -82,7 +106,9 @@ export function handle(action: Action) {
         return void analyzePoint(p.lat, p.lon);
       }
       if (action === "square") return toggle("data");
-      if (action === "triangle") return set({ shadows: !s.shadows });
+      if (action === "triangle") return toggleShadows();
+      if (action === "dpad_up") return cycleLayer(-1);
+      if (action === "dpad_down") return cycleLayer(1);
       return;
     case "time":
       if (action === "x") {
@@ -91,7 +117,9 @@ export function handle(action: Action) {
         return set({ playing: !s.playing, timeIndex: atEnd && !s.playing ? 0 : s.timeIndex });
       }
       if (action === "square") return toggle("data");
-      if (action === "triangle") return set({ shadows: !s.shadows });
+      if (action === "triangle") return toggleShadows();
+      if (action === "dpad_up") return cycleLayer(-1);
+      if (action === "dpad_down") return cycleLayer(1);
       if (action === "dpad_right") return jumpWindow(1);
       if (action === "dpad_left") return jumpWindow(-1);
       return;

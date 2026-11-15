@@ -47,6 +47,8 @@ export default function TimeChart() {
       legend: { orientation: "h", x: 0, y: 1.0, yanchor: "bottom", font: { size: 14 } },
       shapes: [...windowShapes(ts), nowShape(ts, get().timeIndex)],
       hovermode: "x unified",
+      // Caja del cursor: fondo oscuro y texto claro (por defecto Plotly la pinta blanca y no se lee).
+      hoverlabel: { bgcolor: "#0f172a", bordercolor: "#38bdf8", font: { color: "#f1f5f9", size: 14, family: "Inter, system-ui, sans-serif" } },
     };
     void Plotly.react(el, data, layout, { displayModeBar: false, responsive: true });
 

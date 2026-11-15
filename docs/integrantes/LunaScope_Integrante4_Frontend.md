@@ -214,6 +214,10 @@ Base: `http://localhost:8000/api`
 | GET | `/score?profile=solar` | ranking de los 3 sitios (+ punto libre si se pasa `point_id`) |
 | POST | `/point` | body `{"lat":-86.1,"lon":-3.2}` → `{"point_id":"p-1", "quality":"estimated", "site":{...}, "horizon":{...}, "terrain":{...}, "timeseries":{...}}` en < 5 s |
 | POST | `/report` | body `{"site_id":"malapert","profile":"solar"}` → informe (ver Integrante 1) |
+| GET | `/illumination/{id}/meta` | rectángulo lat/lon, resolución y método de la capa de sombras del sitio |
+| GET | `/illumination/{id}.png?t=…` | PNG de sombras del relieve (DEM LOLA + Sol de la serie) en el instante `t` |
+| GET | `/terrain/info` | si el backend tiene el DEM LOLA y cómo pedir el relieve |
+| GET | `/terrain/heightmap/{z}/{x}/{y}.bin` | 65×65 alturas float32 (m, esfera 1 737 400 m) para el globo 3D |
 
 Respuesta de `/score`:
 
@@ -268,8 +272,8 @@ Subpuntuaciones de 0 a 100:
 | L2 / R2 | Zoom alejar / acercar | Retroceder / adelantar el tiempo (la presión controla la velocidad) | — |
 | X | Marcar punto libre | Pausar / reanudar el tiempo | Confirmar sitio → informe |
 | Cuadrado | Panel de datos del sitio | Panel de datos en el instante actual | Detalle de la puntuación |
-| Triángulo | Sombras on/off | Sombras on/off | — |
-| Cruceta | — | Ventana de visibilidad anterior / siguiente | Cambiar de perfil |
+| Triángulo | Sombras del relieve on/off | Sombras del relieve on/off | — |
+| Cruceta | ↑↓ capa (ninguna / elevación / pendiente) | ←→ ventana anterior / siguiente · ↑↓ capa | Cambiar de perfil |
 | Círculo | Volver / cerrar panel | Volver / cerrar panel | Volver / cerrar panel |
 | Touchpad | Siguiente modo | Siguiente modo | Siguiente modo (vuelve a Explore) |
 | Options | Menú (ayuda, reiniciar) | Menú | Menú |
