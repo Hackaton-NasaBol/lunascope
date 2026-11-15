@@ -6,12 +6,13 @@ type Entry = [ButtonId, string, string]; // botón, acción, tecla equivalente
 const LEGEND: Record<Mode, Entry[]> = {
   explore: [
     ["ls", "Mover", "WASD"], ["rs", "Orbitar", "ratón"], ["l2r2", "Zoom", "Z/C"], ["l1r1", "Sitio", "Q/E"],
-    ["x", "Punto libre", "Enter"], ["square", "Datos", "I"], ["triangle", "Sombras", "T"], ["touchpad", "Siguiente modo", "Tab"],
+    ["x", "Punto libre", "Enter"], ["square", "Datos", "I"], ["triangle", "Sombras", "T"], ["dpad_ud", "Capa", "3/4"],
+    ["touchpad", "Siguiente modo", "Tab"],
   ],
   time: [
     ["l2r2", "Tiempo −/+", "Z/C"], ["x", "Pausa / play", "Enter"], ["dpad_lr", "Ventana ant./sig.", "1/2"],
     ["l1r1", "Sitio", "Q/E"], ["rs", "Orbitar", "ratón"], ["square", "Datos", "I"], ["triangle", "Sombras", "T"],
-    ["touchpad", "Siguiente modo", "Tab"],
+    ["dpad_ud", "Capa", "3/4"], ["touchpad", "Siguiente modo", "Tab"],
   ],
   selection: [
     ["ls", "Filas", "W/S"], ["dpad", "Perfil", "1–4"], ["x", "Confirmar → informe", "Enter"],

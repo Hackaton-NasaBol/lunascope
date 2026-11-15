@@ -199,6 +199,10 @@ Base: `http://localhost:8000/api`
 | GET | `/score?profile=solar` | ranking de los 3 sitios (+ punto libre si se pasa `point_id`) |
 | POST | `/point` | body `{"lat":-86.1,"lon":-3.2}` → `{"point_id":"p-1", "quality":"estimated", "site":{...}, "horizon":{...}, "terrain":{...}, "timeseries":{...}}` en < 5 s |
 | POST | `/report` | body `{"site_id":"malapert","profile":"solar"}` → informe (ver Integrante 1) |
+| GET | `/illumination/{id}/meta` | rectángulo lat/lon, resolución y método de la capa de sombras del sitio |
+| GET | `/illumination/{id}.png?t=…` | PNG de sombras del relieve (DEM LOLA + Sol de la serie) en el instante `t` |
+| GET | `/terrain/info` | si el backend tiene el DEM LOLA y cómo pedir el relieve |
+| GET | `/terrain/heightmap/{z}/{x}/{y}.bin` | 65×65 alturas float32 (m, esfera 1 737 400 m) para el globo 3D |
 
 Respuesta de `/score`:
 
@@ -253,8 +257,8 @@ Subpuntuaciones de 0 a 100:
 | L2 / R2 | Zoom alejar / acercar | Retroceder / adelantar el tiempo (la presión controla la velocidad) | — |
 | X | Marcar punto libre | Pausar / reanudar el tiempo | Confirmar sitio → informe |
 | Cuadrado | Panel de datos del sitio | Panel de datos en el instante actual | Detalle de la puntuación |
-| Triángulo | Sombras on/off | Sombras on/off | — |
-| Cruceta | — | Ventana de visibilidad anterior / siguiente | Cambiar de perfil |
+| Triángulo | Sombras del relieve on/off | Sombras del relieve on/off | — |
+| Cruceta | ↑↓ capa (ninguna / elevación / pendiente) | ←→ ventana anterior / siguiente · ↑↓ capa | Cambiar de perfil |
 | Círculo | Volver / cerrar panel | Volver / cerrar panel | Volver / cerrar panel |
 | Touchpad | Siguiente modo | Siguiente modo | Siguiente modo (vuelve a Explore) |
 | Options | Menú (ayuda, reiniciar) | Menú | Menú |
@@ -303,3 +307,4 @@ Todo tiene equivalente en teclado: flechas/WASD, `Q`/`E` = L1/R1, `Z`/`C` = L2/R
 | 2026-11-14 (antes de la H3) | `POST /point` añade `elapsed_s`. Los `point_id` (`p-1`, `p-2`…) también sirven en `/sites/{id}/horizon\|terrain\|timeseries` y en `/report`. Body inválido → 422 `invalid_request`; fuera del DEM → 422 `outside_dem`. | Integrante 1 |
 | 2026-11-14 (antes de la H3) | `POST /report` añade `quality` (`"full"` o `"estimated"`). | Integrante 1 |
 | 2026-11-14 (tras integrar SPICE + LOLA reales) | `continuity`: el límite de la noche más larga pasa de **240 h a 720 h** (`100 × max(0, 1 − longest_dark_h / 720)`). Con 240 h los 3 sitios reales puntuaban 0 (noches de 328–1441 h) y la columna no distinguía nada. Constante `CONTINUITY_MAX_DARK_H` en `backend/lunascope/scoring/engine.py` (y su copia en `frontend/src/mocks/index.ts`). | Integrante 1 |
+| 2026-11-15 | Capas del terreno y sombras: endpoints `/illumination/{id}/meta`, `/illumination/{id}.png?t=…`, `/terrain/info` y `/terrain/heightmap/{z}/{x}/{y}.bin`. Capas fijas `frontend/public/layers/` (elevación, pendiente, relieve sombreado) generadas con `backend/scripts/make_layers.py`. Controles: Triángulo = sombras del relieve; cruceta ↑↓ = capa en Explore y Mission Time. | Integrante 1 |

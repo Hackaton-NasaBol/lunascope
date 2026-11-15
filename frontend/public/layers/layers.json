@@ -1,0 +1,129 @@
+{
+  "generated_at": "2026-11-15T03:56:27Z",
+  "base": {
+    "id": "hillshade",
+    "name": "Relieve sombreado",
+    "url": "/layers/hillshade.jpg",
+    "method": "Sombreado de relieve del DEM (luz fija, solo para leer la forma del terreno).",
+    "rectangle": {
+      "west": -180.0,
+      "south": -90.0,
+      "east": 180.0,
+      "north": -80.0
+    },
+    "source": "LRO LOLA, NASA PGDA (LDEM_80S_80MPP_ADJ.TIF)",
+    "resolution_m": 80.0,
+    "image_px": [
+      8192,
+      2048
+    ],
+    "status": "real"
+  },
+  "layers": [
+    {
+      "id": "elevation",
+      "name": "Elevación",
+      "url": "/layers/elevation.jpg",
+      "units": "m",
+      "legend": [
+        {
+          "value": -5359,
+          "color": "#006837"
+        },
+        {
+          "value": -4284,
+          "color": "#1a9850"
+        },
+        {
+          "value": -3208,
+          "color": "#66bd63"
+        },
+        {
+          "value": -2133,
+          "color": "#a6d96a"
+        },
+        {
+          "value": -1058,
+          "color": "#d9ef8b"
+        },
+        {
+          "value": 17,
+          "color": "#fee08b"
+        },
+        {
+          "value": 1092,
+          "color": "#fdae61"
+        },
+        {
+          "value": 2167,
+          "color": "#f46d43"
+        },
+        {
+          "value": 3243,
+          "color": "#d73027"
+        },
+        {
+          "value": 4318,
+          "color": "#a50026"
+        }
+      ],
+      "method": "Altura sobre la esfera de 1 737 400 m (percentiles 1–99 % del casquete), con sombreado de relieve.",
+      "rectangle": {
+        "west": -180.0,
+        "south": -90.0,
+        "east": 180.0,
+        "north": -80.0
+      },
+      "source": "LRO LOLA, NASA PGDA (LDEM_80S_80MPP_ADJ.TIF)",
+      "resolution_m": 80.0,
+      "image_px": [
+        8192,
+        2048
+      ],
+      "status": "real"
+    },
+    {
+      "id": "slope",
+      "name": "Pendiente",
+      "url": "/layers/slope.jpg",
+      "units": "°",
+      "legend": [
+        {
+          "value": 0,
+          "color": "#166534"
+        },
+        {
+          "value": 5,
+          "color": "#84cc16"
+        },
+        {
+          "value": 10,
+          "color": "#facc15"
+        },
+        {
+          "value": 15,
+          "color": "#f97316"
+        },
+        {
+          "value": 25,
+          "color": "#b91c1c"
+        }
+      ],
+      "threshold": 10.0,
+      "method": "Gradiente del DEM a 80 m/píxel; > 10° = peligrosa (38.2 % del casquete).",
+      "rectangle": {
+        "west": -180.0,
+        "south": -90.0,
+        "east": 180.0,
+        "north": -80.0
+      },
+      "source": "LRO LOLA, NASA PGDA (LDEM_80S_80MPP_ADJ.TIF)",
+      "resolution_m": 80.0,
+      "image_px": [
+        8192,
+        2048
+      ],
+      "status": "real"
+    }
+  ]
+}

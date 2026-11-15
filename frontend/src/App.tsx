@@ -4,7 +4,7 @@ import { startInput } from "./input/loop";
 import ExploreMode from "./modes/ExploreMode";
 import MissionTimeMode from "./modes/MissionTimeMode";
 import SelectionMode from "./modes/SelectionMode";
-import { loadAll, useStore } from "./store";
+import { loadAll, loadLayers, useStore } from "./store";
 import ButtonLegend from "./ui/ButtonLegend";
 import Menu from "./ui/Menu";
 import ReportModal from "./ui/ReportModal";
@@ -20,6 +20,7 @@ export default function App() {
 
   useEffect(() => {
     void loadAll();
+    void loadLayers();
     startInput();
   }, []);
 

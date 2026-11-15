@@ -38,6 +38,43 @@ export interface State {
   gamepadStandard: boolean;
   globeStatus: "loading" | "terrain" | "ellipsoid" | "error";
   globeMessage: string | null;
+
+  // capas y sombras
+  layer: LayerId;
+  layerFromShadows: boolean; // la capa de elevación la puso Triángulo: al apagar las sombras se quita
+  layersMeta: LayerMeta[]; // de /layers/layers.json (lo genera backend/scripts/make_layers.py)
+  layersBase: BaseLayerMeta | null; // relieve sombreado de fondo
+  shadowInfo: ShadowInfo;
+}
+
+export type LayerId = "none" | "elevation" | "slope";
+export const LAYER_ORDER: LayerId[] = ["none", "elevation", "slope"];
+
+export interface LayerMeta {
+  id: Exclude<LayerId, "none">;
+  name: string;
+  url: string;
+  units: string;
+  legend: { value: number; color: string }[];
+  threshold?: number;
+  method: string;
+  source: string;
+  resolution_m: number;
+  rectangle: { west: number; south: number; east: number; north: number };
+  status: "real" | "mock";
+}
+
+export interface BaseLayerMeta {
+  url: string;
+  rectangle: LayerMeta["rectangle"];
+}
+
+/** Estado de la capa de sombras: "dem" = calculadas con LOLA + SPICE; "approx" = sombras de Cesium. */
+export interface ShadowInfo {
+  mode: "off" | "loading" | "dem" | "approx";
+  siteLitFraction?: number | null;
+  sunEl?: number;
+  detail?: string;
 }
 
 const initial: State = {
@@ -46,7 +83,20 @@ const initial: State = {
   mode: "explore", siteIndex: 0, timeIndex: 0, playing: false, profile: "solar", shadows: false,
   panel: null, selectionRow: 0, gamepadConnected: false, gamepadStandard: true,
   globeStatus: "loading", globeMessage: null,
+  layer: "none", layerFromShadows: false, layersMeta: [], layersBase: null, shadowInfo: { mode: "off" },
 };
+
+/** Carga los metadatos de las capas fijas (si no se generaron, no hay capas y no pasa nada). */
+export async function loadLayers() {
+  try {
+    const res = await fetch("/layers/layers.json", { cache: "no-cache" });
+    if (!res.ok) return;
+    const json = (await res.json()) as { layers: LayerMeta[]; base?: BaseLayerMeta };
+    set({ layersMeta: json.layers ?? [], layersBase: json.base ?? null });
+  } catch {
+    /* sin capas */
+  }
+}
 
 export const useStore = create<State>(() => initial);
 export const get = useStore.getState;

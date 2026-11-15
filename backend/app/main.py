@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import config, errors
 from app.models import Health
-from app.routers import point, report, score, sites
+from app.routers import illumination, point, report, score, sites, terrain_tiles
 from app.store import store
 from lunascope import pipeline
 
@@ -28,6 +28,7 @@ app.add_middleware(
     allow_origins=config.CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Sun-Az", "X-Sun-El", "X-Site-Lit-Fraction"],
 )
 errors.install(app)
 
@@ -37,5 +38,5 @@ def health():
     return {"status": "ok", "kernels_loaded": store.kernels_loaded, "sites": len(store.sites)}
 
 
-for r in (sites.router, score.router, point.router, report.router):
+for r in (sites.router, score.router, point.router, report.router, illumination.router, terrain_tiles.router):
     app.include_router(r, prefix="/api")
