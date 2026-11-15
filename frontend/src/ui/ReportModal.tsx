@@ -18,6 +18,11 @@ export default function ReportModal() {
             <div className="mb-1 text-sm uppercase tracking-[0.2em] text-sky-300">Informe de misión · LunaScope</div>
             <h1 className="text-3xl font-semibold text-white">{report.title}</h1>
             <div className="mt-1 text-base text-slate-400">Generado: {formatUtc(report.generated_at)} · Perfil: {report.profile.name}</div>
+            {report.mission_window && (
+              <div className="text-base text-slate-300">
+                Ventana analizada: {formatUtc(report.mission_window.start)} → {formatUtc(report.mission_window.end)}
+              </div>
+            )}
             {report.quality === "estimated" && (
               <p className="mt-2 text-amber-300">Punto libre: análisis estimado (horizonte de menor alcance y resolución).</p>
             )}

@@ -60,6 +60,31 @@ def sun_at(ts: dict, t_iso: str) -> tuple[float, float, str]:
     return (a["az"] + daz * f) % 360, a["el"] + (b["el"] - a["el"]) * f, fmt_utc(parse_utc(t_iso))
 
 
+def sun_for(site: dict, ts: dict, t_iso: str) -> tuple[float, float, str]:
+    """Sol en el instante t: de la serie por defecto si cae dentro; si no (otra fecha elegida), SPICE directo."""
+    try:
+        return sun_at(ts, t_iso)
+    except ApiError as e:
+        if e.error != "time_out_of_range":
+            raise
+    from app import scenario
+
+    scenario.window(t_iso, 1)  # valida que la fecha esté dentro de la cobertura de las efemérides
+    if not scenario.live_available():
+        raise ApiError(503, "kernels_missing", "Para sombras en otra fecha hacen falta los kernels SPICE.")
+    from lunascope.science import compute_geometry, time_grid
+
+    t = parse_utc(t_iso)
+    from lunascope.pipeline import SPICE_LOCK
+
+    terrain = store.get(site["id"], "terrain") or {}
+    elev = terrain.get("elevation_m", site.get("elevation_m", 0.0))
+    with SPICE_LOCK:  # SPICE no es seguro con hilos
+        _, ets = time_grid(t, t, 1.0)
+        g = compute_geometry(site["lat"], site["lon"], elev + 2.0, ets)
+    return float(g["sun_az"][0]), float(g["sun_el"][0]), fmt_utc(t)
+
+
 @lru_cache(maxsize=256)
 def _render(lat: float, lon: float, az: float, el: float) -> tuple[bytes, float | None]:
     from lunascope.terrain.illumination import lit_fraction_at_center, lit_mask, render_png, site_grid
@@ -81,7 +106,7 @@ def illumination_meta(site_id: str):
 def illumination_png(site_id: str, t: str = Query(..., description="Instante UTC ISO 8601, p. ej. 2027-09-03T05:00:00Z")):
     site, ts = _site(site_id)
     grid = _grid(site)
-    az, el, t_norm = sun_at(ts, t)
+    az, el, t_norm = sun_for(site, ts, t)
     t0 = time.time()
     # Redondeo a 0,1°: el Sol se mueve ~0,5°/h, así se reutiliza la caché al mover el tiempo.
     png, lit_center = _render(grid.lat, grid.lon, round(az, 1), round(el, 1))

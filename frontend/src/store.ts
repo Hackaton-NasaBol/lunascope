@@ -1,10 +1,13 @@
 import { create } from "zustand";
 import { api, ApiError } from "./api/client";
-import type { PointResponse, Profile, ProfileId, Report, ScoreResponse, SiteOverview, Timeseries } from "./api/types";
+import type {
+  MissionInfo, MissionWindow, PointResponse, Profile, ProfileId, Report, ScoreResponse, SiteOverview, Timeseries,
+} from "./api/types";
+import { formatUtc } from "./lib/time";
 import { localReport, localScore, mockSites, mockTimeseries, PROFILES } from "./mocks";
 
 export type Mode = "explore" | "time" | "selection";
-export type Panel = null | "data" | "score" | "menu" | "report";
+export type Panel = null | "data" | "score" | "menu" | "report" | "mission";
 
 export const MODES: Mode[] = ["explore", "time", "selection"];
 export const MODE_NAMES: Record<Mode, string> = {
@@ -38,6 +41,11 @@ export interface State {
   gamepadStandard: boolean;
   globeStatus: "loading" | "terrain" | "ellipsoid" | "error";
   globeMessage: string | null;
+
+  // ventana de la misión (fecha de aterrizaje y duración)
+  mission: MissionWindow | null; // null = la ventana por defecto (precalculada)
+  missionInfo: MissionInfo | null;
+  missionDraft: MissionWindow | null; // lo que se está editando en el panel de fecha
 
   // capas y sombras
   layer: LayerId;
@@ -83,6 +91,7 @@ const initial: State = {
   mode: "explore", siteIndex: 0, timeIndex: 0, playing: false, profile: "solar", shadows: false,
   panel: null, selectionRow: 0, gamepadConnected: false, gamepadStandard: true,
   globeStatus: "loading", globeMessage: null,
+  mission: null, missionInfo: null, missionDraft: null,
   layer: "none", layerFromShadows: false, layersMeta: [], layersBase: null, shadowInfo: { mode: "off" },
 };
 
@@ -115,17 +124,25 @@ export const activeTimeseries = (s: State = get()) => {
   return site ? s.timeseries[site.id] : undefined;
 };
 const pointId = () => get().freePoint?.data?.point_id;
+/** Ventana a pedir a la API (undefined = la por defecto). */
+export const missionWindow = (s: State = get()) => s.mission ?? undefined;
+/** Ventana efectiva (la elegida o la por defecto). */
+export function effectiveWindow(s: State = get()): MissionWindow | null {
+  if (s.mission) return s.mission;
+  return s.missionInfo ? { start: s.missionInfo.default_start, days: s.missionInfo.default_days } : null;
+}
 
 // ------------------------------------------------------------------ carga
 export async function loadAll() {
   set({ loading: true });
   try {
     await api.health();
-    const [sites, profiles] = await Promise.all([api.sites(), api.profiles()]);
-    const series = await Promise.all(sites.map((s) => api.timeseries(s.id)));
-    const score = await api.score(get().profile);
+    const [sites, profiles, missionInfo] = await Promise.all([api.sites(), api.profiles(), api.mission().catch(() => null)]);
+    const w = missionWindow();
+    const series = await Promise.all(sites.map((s) => api.timeseries(s.id, w)));
+    const score = await api.score(get().profile, undefined, w);
     set({
-      offline: false, sites, profiles,
+      offline: false, sites, profiles, missionInfo,
       timeseries: Object.fromEntries(series.map((t) => [t.site_id, t])),
       score, loading: false,
     });
@@ -152,7 +169,7 @@ export async function refreshScore(profile: ProfileId = get().profile) {
     return;
   }
   try {
-    const score = await api.score(profile, pid);
+    const score = await api.score(profile, pid, missionWindow());
     if (get().profile === profile) set({ score }); // ignora respuestas viejas
   } catch (e) {
     toast(`No se pudo calcular la puntuación: ${(e as Error).message}`);
@@ -166,7 +183,7 @@ export async function openReport(siteId: string) {
   try {
     const report = s.offline
       ? localReport(s.sites.find((x) => x.id === siteId)!, s.profile, s.score!, s.timeseries[siteId]?.summary.windows[0] ?? null)
-      : await api.report(siteId, s.profile);
+      : await api.report(siteId, s.profile, missionWindow(s));
     set({ report });
   } catch (e) {
     set({ panel: null });
@@ -186,6 +203,8 @@ export async function analyzePoint(lat: number, lon: number) {
   toast("Analizando punto… (estimado)", 15000);
   try {
     const data = await api.point(lat, lon);
+    const w = missionWindow();
+    if (w) data.timeseries = await api.timeseries(data.point_id, w); // misma ventana que los sitios
     const site: SiteOverview = {
       ...data.site, quality: "estimated", complete: true,
       source: data.timeseries.source ?? "real", terrain: data.terrain, summary: data.timeseries.summary,
@@ -203,5 +222,63 @@ export async function analyzePoint(lat: number, lon: number) {
     set({ freePoint: null });
     if (e instanceof ApiError && e.code === "outside_dem") toast("Ese punto está fuera de la cobertura del DEM LOLA");
     else toast(`No se pudo analizar el punto: ${(e as Error).message}`);
+  }
+}
+
+// ------------------------------------------------------------------ fecha de la misión
+const DAY = 86_400_000;
+/** Mes lunar sinódico (de una salida del Sol a la siguiente en el mismo sitio). */
+export const SYNODIC_MS = 29.530589 * DAY;
+
+export function isoDay(ms: number): string {
+  return new Date(ms).toISOString().replace(/\.\d+Z$/, "Z");
+}
+
+/** Abre el panel de fecha con la ventana actual como borrador. */
+export function openMissionPanel() {
+  const w = effectiveWindow();
+  if (!w) return toast("La API no informa de la ventana de la misión");
+  set({ panel: "mission", missionDraft: { ...w } });
+}
+
+/** Mueve el borrador: días (±1) o meses lunares (±1); duración con dDays. */
+export function nudgeMissionDraft(deltaMs: number, dDays = 0) {
+  const s = get();
+  const d = s.missionDraft, info = s.missionInfo;
+  if (!d || !info) return;
+  const days = Math.max(1, Math.min(info.max_days, d.days + dDays));
+  let start = Math.round((Date.parse(d.start) + deltaMs) / 3_600_000) * 3_600_000; // a la hora en punto
+  start = Math.max(Date.parse(info.min_start), Math.min(Date.parse(info.max_end) - days * DAY, start));
+  set({ missionDraft: { start: isoDay(start), days } });
+}
+
+/** Aplica una ventana de misión: recalcula las series de todos los sitios y la puntuación. */
+export async function applyMission(w: MissionWindow) {
+  const s = get();
+  if (s.offline) return toast("Cambiar la fecha necesita la API (ahora hay datos de demostración)");
+  if (s.missionInfo && !s.missionInfo.live_dates) {
+    return toast("El servidor no tiene los kernels SPICE: solo está disponible la fecha por defecto");
+  }
+  const isDefault = s.missionInfo && w.start === s.missionInfo.default_start && w.days === s.missionInfo.default_days;
+  const req = isDefault ? undefined : w;
+  set({ loading: true, panel: null, playing: false });
+  try {
+    const series = await Promise.all(get().sites.map((x) => api.timeseries(x.id, req)));
+    const score = await api.score(get().profile, pointId(), req);
+    set({
+      mission: req ?? null,
+      timeseries: Object.fromEntries(series.map((t) => [t.site_id, t])),
+      sites: get().sites.map((x) => {
+        const t = series.find((y) => y.site_id === x.id);
+        return t ? { ...x, summary: t.summary } : x;
+      }),
+      score, timeIndex: 0, loading: false,
+    });
+    const end = Date.parse(w.start) + w.days * DAY;
+    const day = (ms: number) => formatUtc(ms).split(" · ")[0];
+    toast(`Misión: ${day(Date.parse(w.start))} → ${day(end)} (${w.days} d)`);
+  } catch (e) {
+    set({ loading: false });
+    toast(`No se pudo cambiar la fecha: ${(e as Error).message}`);
   }
 }

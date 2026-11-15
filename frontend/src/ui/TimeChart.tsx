@@ -60,6 +60,9 @@ export default function TimeChart() {
       setTimeout(() => {
         pending = false;
         last = performance.now();
+        // Si entretanto cambió la serie (otro sitio u otra fecha), esta suscripción es vieja: no pintar
+        // sus ventanas sobre el gráfico nuevo (quedarían fuera del eje y desaparecerían las bandas).
+        if (activeTimeseries(get()) !== ts) return;
         void Plotly.relayout(el, { shapes: [...windowShapes(ts), nowShape(ts, get().timeIndex)] });
       }, wait);
     });

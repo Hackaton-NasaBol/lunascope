@@ -1,5 +1,5 @@
 import { formatUtc, sampleAt } from "../lib/time";
-import { activeSite, activeTimeseries, MODE_NAMES, MODES, useStore } from "../store";
+import { activeSite, activeTimeseries, effectiveWindow, MODE_NAMES, MODES, openMissionPanel, useStore } from "../store";
 import ControllerStatus from "./ControllerStatus";
 
 export default function TopBar() {
@@ -7,6 +7,10 @@ export default function TopBar() {
   const site = activeSite(s);
   const ts = activeTimeseries(s);
   const now = ts ? formatUtc(sampleAt(ts, s.timeIndex).ms) : "—";
+  const win = effectiveWindow(s);
+  const winText = win
+    ? `${formatUtc(win.start).split(" · ")[0]} → ${formatUtc(Date.parse(win.start) + win.days * 86_400_000).split(" · ")[0]} (${win.days} d)`
+    : "";
   return (
     <div className="flex items-start justify-between gap-4 p-4 print:hidden">
       <div className="glass flex items-center gap-5 px-5 py-3">
@@ -26,6 +30,16 @@ export default function TopBar() {
             {site?.quality === "estimated" && <span className="badge-amber">estimado</span>}
           </div>
           <div className="font-mono text-lg text-slate-300">{now}</div>
+          {win && (
+            <button
+              onClick={openMissionPanel}
+              className="mt-1 flex items-center gap-2 rounded-md bg-slate-800/80 px-2 py-0.5 text-sm text-slate-300 hover:bg-slate-700"
+              title="Cambiar la fecha de la misión (Share / F)"
+            >
+              <span>🗓 Misión: {winText}</span>
+              <span className={s.mission ? "text-sky-300" : "text-slate-500"}>{s.mission ? "· otra fecha" : "· por defecto"}</span>
+            </button>
+          )}
         </div>
       </div>
       <div className="flex flex-col items-end gap-2">

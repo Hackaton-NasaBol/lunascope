@@ -194,9 +194,11 @@ Base: `http://localhost:8000/api`
 | GET | `/sites` | contenido de `sites.json` + `terrain` y `summary` de cada sitio |
 | GET | `/sites/{id}/horizon` | `horizon.json` |
 | GET | `/sites/{id}/terrain` | `terrain.json` |
-| GET | `/sites/{id}/timeseries` | `timeseries.json` (completo, el frontend lo recorre localmente) |
+| GET | `/sites/{id}/timeseries` | `timeseries.json` (completo, el frontend lo recorre localmente). Con `?start=…&days=…` (1–180 d), la serie de **otra fecha**, calculada con SPICE al momento |
+| GET | `/mission` | ventana por defecto, límites de fechas y si el servidor puede calcular otras (`live_dates`) |
+| GET | `/scenario?profile=…&start=…&days=…` | **resumen de una fecha** para todos los sitios: puntuación, % Sol/Tierra, noche más larga, mejor ventana, qué pasa al aterrizar (`at_landing`) y sitio recomendado |
 | GET | `/profiles` | lista de perfiles con sus pesos |
-| GET | `/score?profile=solar` | ranking de los 3 sitios (+ punto libre si se pasa `point_id`) |
+| GET | `/score?profile=solar` | ranking de los 3 sitios (+ punto libre si se pasa `point_id`); acepta `start` y `days` |
 | POST | `/point` | body `{"lat":-86.1,"lon":-3.2}` → `{"point_id":"p-1", "quality":"estimated", "site":{...}, "horizon":{...}, "terrain":{...}, "timeseries":{...}}` en < 5 s |
 | POST | `/report` | body `{"site_id":"malapert","profile":"solar"}` → informe (ver Integrante 1) |
 | GET | `/illumination/{id}/meta` | rectángulo lat/lon, resolución y método de la capa de sombras del sitio |
@@ -261,9 +263,10 @@ Subpuntuaciones de 0 a 100:
 | Cruceta | ↑↓ capa (ninguna / elevación / pendiente) | ←→ ventana anterior / siguiente · ↑↓ capa | Cambiar de perfil |
 | Círculo | Volver / cerrar panel | Volver / cerrar panel | Volver / cerrar panel |
 | Touchpad | Siguiente modo | Siguiente modo | Siguiente modo (vuelve a Explore) |
+| Share | Fecha de la misión | Fecha de la misión | Fecha de la misión |
 | Options | Menú (ayuda, reiniciar) | Menú | Menú |
 
-Todo tiene equivalente en teclado: flechas/WASD, `Q`/`E` = L1/R1, `Z`/`C` = L2/R2, `Enter` = X, `Esc` = Círculo, `I` = Cuadrado, `T` = Triángulo, `Tab` = Touchpad, `M` = Options, `1`–`4` = cruceta.
+Todo tiene equivalente en teclado: flechas/WASD, `Q`/`E` = L1/R1, `Z`/`C` = L2/R2, `Enter` = X, `Esc` = Círculo, `I` = Cuadrado, `T` = Triángulo, `Tab` = Touchpad, `M` = Options, `F` = Share, `1`–`4` = cruceta.
 
 ### MVP: lo que debe funcionar en la H22
 
@@ -308,3 +311,5 @@ Todo tiene equivalente en teclado: flechas/WASD, `Q`/`E` = L1/R1, `Z`/`C` = L2/R
 | 2026-11-14 (antes de la H3) | `POST /report` añade `quality` (`"full"` o `"estimated"`). | Integrante 1 |
 | 2026-11-14 (tras integrar SPICE + LOLA reales) | `continuity`: el límite de la noche más larga pasa de **240 h a 720 h** (`100 × max(0, 1 − longest_dark_h / 720)`). Con 240 h los 3 sitios reales puntuaban 0 (noches de 328–1441 h) y la columna no distinguía nada. Constante `CONTINUITY_MAX_DARK_H` en `backend/lunascope/scoring/engine.py` (y su copia en `frontend/src/mocks/index.ts`). | Integrante 1 |
 | 2026-11-15 | Capas del terreno y sombras: endpoints `/illumination/{id}/meta`, `/illumination/{id}.png?t=…`, `/terrain/info` y `/terrain/heightmap/{z}/{x}/{y}.bin`. Capas fijas `frontend/public/layers/` (elevación, pendiente, relieve sombreado) generadas con `backend/scripts/make_layers.py`. Controles: Triángulo = sombras del relieve; cruceta ↑↓ = capa en Explore y Mission Time. | Integrante 1 |
+| 2026-11-15 | **Fechas de misión**: `GET /mission`; `start` y `days` opcionales en `/sites/{id}/timeseries`, `/score` y `POST /report` (el informe añade `mission_window`). Otras fechas se calculan con SPICE al momento (requiere kernels). Share (`F`) abre el panel de fecha. Las llamadas a SPICE se serializan (`pipeline.SPICE_LOCK`): CSPICE no es seguro con hilos. | Integrante 1 |
+| 2026-11-15 | `GET /scenario`: resumen comparable de una fecha de misión (lo usa el panel «¿Y si aterrizamos en otra fecha?»). | Integrante 1 |

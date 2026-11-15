@@ -10,11 +10,11 @@ const FACE: Record<string, { glyph: string; color: string }> = {
 
 export type ButtonId =
   | "x" | "circle" | "square" | "triangle" | "l1" | "r1" | "l1r1" | "l2" | "r2" | "l2r2"
-  | "ls" | "rs" | "dpad" | "dpad_lr" | "dpad_ud" | "touchpad" | "options";
+  | "ls" | "rs" | "dpad" | "dpad_lr" | "dpad_ud" | "touchpad" | "options" | "share";
 
 const TEXT: Partial<Record<ButtonId, string>> = {
   l1: "L1", r1: "R1", l1r1: "L1/R1", l2: "L2", r2: "R2", l2r2: "L2/R2",
-  ls: "L", rs: "R", dpad: "✚", dpad_lr: "◀▶", dpad_ud: "▲▼", touchpad: "TOUCH", options: "OPT",
+  ls: "L", rs: "R", dpad: "✚", dpad_lr: "◀▶", dpad_ud: "▲▼", touchpad: "TOUCH", options: "OPT", share: "SHARE",
 };
 
 export function PadButton({ id, size = 34 }: { id: ButtonId; size?: number }) {

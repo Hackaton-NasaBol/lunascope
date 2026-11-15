@@ -7,6 +7,7 @@ import SelectionMode from "./modes/SelectionMode";
 import { loadAll, loadLayers, useStore } from "./store";
 import ButtonLegend from "./ui/ButtonLegend";
 import Menu from "./ui/Menu";
+import MissionPanel from "./ui/MissionPanel";
 import ReportModal from "./ui/ReportModal";
 import TopBar from "./ui/TopBar";
 
@@ -26,8 +27,8 @@ export default function App() {
 
   return (
     <div className="relative h-full w-full select-none overflow-hidden bg-slate-950">
-      {/* Globo: pantalla completa; en Mission Time ocupa el 60 % superior */}
-      <div className="absolute inset-x-0 top-0 transition-[bottom] duration-200" style={{ bottom: mode === "time" ? "40%" : 0 }}>
+      {/* Globo: pantalla completa; en Mission Time ocupa el 54 % superior */}
+      <div className="absolute inset-x-0 top-0 transition-[bottom] duration-200" style={{ bottom: mode === "time" ? "46%" : 0 }}>
         <Globe />
         {mode === "explore" && <div className="reticle" />}
       </div>
@@ -54,6 +55,7 @@ export default function App() {
         <div className="glass panel-in absolute left-1/2 top-28 -translate-x-1/2 px-5 py-3 text-lg text-white print:hidden">{toast}</div>
       )}
       {panel === "menu" && <Menu />}
+      {panel === "mission" && <MissionPanel />}
       {panel === "report" && <ReportModal />}
     </div>
   );

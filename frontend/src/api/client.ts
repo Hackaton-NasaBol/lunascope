@@ -1,5 +1,5 @@
 import type {
-  ApiErrorBody, Health, PointResponse, Profile, ProfileId, Report, ScoreResponse, SiteOverview, Timeseries,
+  ApiErrorBody, Health, MissionInfo, MissionWindow, ScenarioSummary, PointResponse, Profile, ProfileId, Report, ScoreResponse, SiteOverview, Timeseries,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000/api";
@@ -35,15 +35,21 @@ async function request<T>(path: string, init?: RequestInit, timeoutMs = 8000): P
   }
 }
 
+const win = (w?: MissionWindow) => (w ? `start=${encodeURIComponent(w.start)}&days=${w.days}` : "");
+
 export const api = {
+  mission: () => request<MissionInfo>("/mission"),
+  scenario: (profile: ProfileId, w?: MissionWindow, pointId?: string) =>
+    request<ScenarioSummary>(`/scenario?profile=${profile}${w ? `&${win(w)}` : ""}${pointId ? `&point_id=${encodeURIComponent(pointId)}` : ""}`, undefined, 20000),
   health: () => request<Health>("/health", undefined, 2500),
   sites: () => request<SiteOverview[]>("/sites"),
-  timeseries: (id: string) => request<Timeseries>(`/sites/${encodeURIComponent(id)}/timeseries`),
+  timeseries: (id: string, w?: MissionWindow) =>
+    request<Timeseries>(`/sites/${encodeURIComponent(id)}/timeseries${w ? `?${win(w)}` : ""}`, undefined, 20000),
   profiles: () => request<Profile[]>("/profiles"),
-  score: (profile: ProfileId, pointId?: string) =>
-    request<ScoreResponse>(`/score?profile=${profile}${pointId ? `&point_id=${encodeURIComponent(pointId)}` : ""}`),
+  score: (profile: ProfileId, pointId?: string, w?: MissionWindow) =>
+    request<ScoreResponse>(`/score?profile=${profile}${pointId ? `&point_id=${encodeURIComponent(pointId)}` : ""}${w ? `&${win(w)}` : ""}`, undefined, 20000),
   point: (lat: number, lon: number) =>
     request<PointResponse>("/point", { method: "POST", body: JSON.stringify({ lat, lon }) }, 15000),
-  report: (siteId: string, profile: ProfileId) =>
-    request<Report>("/report", { method: "POST", body: JSON.stringify({ site_id: siteId, profile }) }),
+  report: (siteId: string, profile: ProfileId, w?: MissionWindow) =>
+    request<Report>("/report", { method: "POST", body: JSON.stringify({ site_id: siteId, profile, ...(w ?? {}) }) }, 20000),
 };
